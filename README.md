@@ -93,37 +93,46 @@ psique 1crn.pdb --format pymol -o 1crn.pml
 
 Alternatively, the output format can be set via the `PSIQUE_FORMAT` environment variable:
 
-### Hooking PSIQUE to other software
 ```sh
 PSIQUE_FORMAT=pymol psique 1crn.pdb -o 1crn.pml
 ```
 
-Analysis and visualization software like [ProDy](http://prody.csb.pitt.edu/), [VMD](https://www.ks.uiuc.edu/Research/vmd/), etc. can be tricked into using PSIQUE as long as they allow to provide custom executables for STRIDE.
 This is useful for PSIQUE to mimic other software such as STRIDE (see [Hooking PSIQUE to other software](#hooking-psique-to-other-software)).
 
-To do so, create a bash script named `psique-stride` that calls PSIQUE with the `--stride` option and forwards any other arguments:
 **Important** In both PyMOL and VMD Command Script files, the PDB file path is written as it is in the script file, so moving it into a different folder may break it.
 
-```sh
-#!/usr/bin/env bash
+### Hooking PSIQUE to other software
 
-p=`dirname "$0"`
-"$p/psique" --stride $*
-```
+Analysis and visualization software like [ProDy](http://prody.csb.pitt.edu/), [VMD](https://www.ks.uiuc.edu/Research/vmd/), etc. can be tricked into using PSIQUE as long as they allow providing custom executables for STRIDE.
 
-This assumes that `psique` is in the same directory. Then, `chmod +x psique-stride`.
+To do so, set the `PSIQUE_FORMAT` environment variable globally to the desired output format, and then simply set `psique` as the executable.
 
 #### VMD
 
-VMD uses the `STRIDE_BIN` environment variable to detect the STRIDE binary, so define it to point to `psique-stride` as:
+Visual Molecular Dynamics ([VMD](https://www.ks.uiuc.edu/Research/vmd/)) is a widely-used molecular visualization program for large biomolecular systems.
+VMD uses the `STRIDE_BIN` environment variable to detect the STRIDE binary, so overwrite it to point to `psique`:
 
 ```sh
-STRIDE_BIN=/path/to/psique-stride vmd
+export PSIQUE_FORMAT=stride
+STRIDE_BIN=/path/to/psique vmd
 ```
 
-Note that a STRIDE citation notice is printed out by VMD when computing secondary structure, but it is not telling of the program that it was run.
+Note that VMD prints out a notice about the STRIDE citation each time it calls the STRIDE executable.
+However, this does not tell which program was executed.
 
-**Important** This doesn't work on the Windows Subsystem for Linux (WSL) as the `STRIDE_BIN` environment variable is ignored by VMD on Windows for some reason.
+#### ProDy
+
+[ProDy](http://prody.csb.pitt.edu/index.html) is a Python package for protein structural dynamics analysis.
+It has functions to execute and parse STRIDE, but they do not support a custom path.
+An alternative is to create a symbolic link named `stride` to `psique`.
+For instance,
+
+```sh
+# place the symlink at a directory included in $PATH
+ln -s /path/to/psique ~/bin/stride
+export PSIQUE_FORMAT=stride
+python -c 'import prody; ag = prody.performSTRIDE("/path/to/pdb"); print(ag.getSecstrs())'
+```
 
 #### Other
 
