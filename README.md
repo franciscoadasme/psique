@@ -166,7 +166,7 @@ This repository contains the PSIQUE standalone program.
 
 ## Contributing
 
-1. Fork it (<https://github.com/your-github-user/psique/fork>)
+1. Fork it (<https://github.com/franciscoadasme/psique/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
@@ -174,7 +174,7 @@ This repository contains the PSIQUE standalone program.
 
 ## Contributors
 
-- [Francisco Adasme](https://github.com/your-github-user) - creator and maintainer
+- [Francisco Adasme](https://github.com/franciscoadasme) ([fadasme@ucm.cl](mailto:fadasme@ucm.cl)) - creator and maintainer
 
 ## License
 

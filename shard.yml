@@ -2,7 +2,7 @@ name: psique
 version: 1.1.2
 
 authors:
-  - Francisco Adasme <francisco.adasme@gmail.com>
+  - Francisco Adasme <fadasme@ucm.cl>
 
 dependencies:
   chem:
