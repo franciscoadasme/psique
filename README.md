@@ -1,7 +1,7 @@
-# PSIQUE - Protein Secondary structure Identification on the basis of QUaternions and Electronic structure calculations
+# PSIQUE: Protein Secondary structure Identification on the basis of QUaternions and Electronic structure calculations
 
 PSIQUE is a geometry-based secondary structure assignment method that uses local helix parameters, quaternions, and a classification criterion derived from DFT calculations of polyalanine.
-The algorithm can identify common (alpha-, 3-10-, pi-helices and beta-strand) and rare (PP-II ribbon helix and gamma-helices) secondary structures, including handedness when appropriate.
+The algorithm can identify common (alpha-, 3₁₀-, π-helices and beta-strand) and rare (PP-II ribbon helix and γ-helices) secondary structures, including handedness when appropriate.
 
 ## Installation
 
@@ -62,7 +62,7 @@ PSIQUE 1.1.1 (2020-11-16)
 
 ## Usage
 
-PSIQUE executable expects a PDB file containing a protein structure, and it outputs a new PDB with the information of the protein secondary structure set in the header:
+PSIQUE executable expects a PDB file containing a protein structure, and outputs a new PDB with the information of the protein secondary structure set in the header:
 
 ```sh
 psique 1crn.pdb
@@ -74,27 +74,35 @@ By default, the output is written to standard output. Use the `-o/--output` to s
 psique 1crn.pdb -o 1crn--psique.pdb
 ```
 
-Note that special codes in the HELIX records are used for structures not included in the standard format: 11 for left-handed 3-10-helix and 13 for left-handed pi-helix.
+Note that special codes in the HELIX records in the PDB are used for structures not included in the standard format: 11 for left-handed 3₁₀-helix and 13 for left-handed π-helix.
 
-Alternatively, the output can be written in other file formats that can be read by analysis and visualization packages:
+Alternatively, the output can be written in other file formats that can be read by analysis and visualization packages via the `--format` option:
 
-- `--pymol` write a PyMOL Command Script (\*.pml) file that loads the protein, defines new colors for secondary structures, and sets the secondary structure according to PSIQUE. This file can be directly loaded into PyMOL from the Open menu.
-- `--stride` write a STRIDE output (\*.stride) file. This is useful to hook PSIQUE to any analysis and visualization software that expects a STRIDE file (see below).
-- `--vmd` write a VMD Command Script (\*.vmd) file that loads the protein, defines secondary structure colors, and sets the secondary structure according to PSIQUE. Note that it re-defines existing colors as VMD does not allow for custom colors. Also, it uses the "Secondary Structure" coloring method by changing the standard definitions. This file can be loaded by running `source script.vmd` from the Tcl/Tk Console within VMD or executing VMD from the command line: `vmd -e script.vmd`.
+- `pymol` write a PyMOL Command Script (\*.pml) file that loads the protein, defines new colors for secondary structures, and sets the secondary structure according to PSIQUE. This file can be directly loaded into PyMOL from the Open menu.
+- `stride` write a STRIDE output (\*.stride) file. This is useful to hook PSIQUE to any analysis and visualization software that expects a STRIDE file (see below).
+- `vmd` write a VMD Command Script (\*.vmd) file that loads the protein, defines secondary structure colors, and sets the secondary structure according to PSIQUE.
+  Note that it re-defines existing colors as VMD does not allow for custom colors.
+  Also, it uses the "Secondary Structure" coloring method by changing the standard definitions.
+  This file can be loaded by running `source script.vmd` from the Tcl/Tk Console within VMD or by executing VMD from the command line: `vmd -e script.vmd`.
 
 For example, the following will write a PyMOL Command Script file instead of a PDB:
 
 ```sh
-psique 1crn.pdb --pymol -o 1crn.pml
+psique 1crn.pdb --format pymol -o 1crn.pml
 ```
 
-**Important** In both PyMOL and VMD Command Script files, the PDB file path is written as it is in the script file, so moving it into a different folder may break it.
+Alternatively, the output format can be set via the `PSIQUE_FORMAT` environment variable:
 
 ### Hooking PSIQUE to other software
+```sh
+PSIQUE_FORMAT=pymol psique 1crn.pdb -o 1crn.pml
+```
 
 Analysis and visualization software like [ProDy](http://prody.csb.pitt.edu/), [VMD](https://www.ks.uiuc.edu/Research/vmd/), etc. can be tricked into using PSIQUE as long as they allow to provide custom executables for STRIDE.
+This is useful for PSIQUE to mimic other software such as STRIDE (see [Hooking PSIQUE to other software](#hooking-psique-to-other-software)).
 
 To do so, create a bash script named `psique-stride` that calls PSIQUE with the `--stride` option and forwards any other arguments:
+**Important** In both PyMOL and VMD Command Script files, the PDB file path is written as it is in the script file, so moving it into a different folder may break it.
 
 ```sh
 #!/usr/bin/env bash
@@ -125,7 +133,7 @@ Please refer to the software documentation to check whether the STRIDE executabl
 
 PSIQUE is research software, so please cite the corresponding article when using it in published work.
 
-- Adasme-Carreño F., Caballero J., and Ireta J.; PSIQUE: Protein Secondary Structure Identification on the Basis of Quaternions and Electronic Structure Calculations. _J. Chem. Inf. Model._ **2021**, _61_, 4, 1789–1800.
+> Adasme-Carreño F., Caballero J., and Ireta J.; PSIQUE: Protein Secondary Structure Identification on the Basis of Quaternions and Electronic Structure Calculations. _J. Chem. Inf. Model._ **2021**, _61_, 4, 1789–1800.
 
 The BibTeX reference is:
 
