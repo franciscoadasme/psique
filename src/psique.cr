@@ -2,8 +2,7 @@ require "option_parser"
 require "chem"
 
 OUTPUT_FORMATS = %w(pdb stride pymol vmd)
-VERSION        = "1.1.2"
-VERSION_DATE   = "2020-11-16"
+VERSION        = {{ `shards version "#{__DIR__}"`.chomp.stringify }}
 
 def abort(message : String)
   STDERR.puts "psique: #{message}"
@@ -82,7 +81,7 @@ OptionParser.parse do |parser|
     exit
   end
   parser.on("--version", "show version") do
-    puts "PSIQUE #{VERSION} (#{VERSION_DATE})"
+    puts "PSIQUE #{VERSION}"
     exit
   end
 
