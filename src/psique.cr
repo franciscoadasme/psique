@@ -76,7 +76,11 @@ OptionParser.parse do |parser|
   end
   parser.on("--cite", "Show citation for article") do
     puts <<-CITE
-      Adasme-Carreño, F., Caballero, J., & Ireta, J. (2021). PSIQUE: Protein Secondary Structure Identification on the Basis of Quaternions and Electronic Structure Calculations. Journal of Chemical Information and Modeling, 61(4), 1789-1800. https://doi.org/10.1021/acs.jcim.0c01343
+      Adasme-Carreño, F., Caballero, J., & Ireta, J. (2021). PSIQUE:
+      Protein Secondary Structure Identification on the Basis of
+      Quaternions and Electronic Structure Calculations. Journal of
+      Chemical Information and Modeling, 61(4), 1789-1800.
+      https://doi.org/10.1021/acs.jcim.0c01343
       CITE
     exit
   end
