@@ -17,7 +17,7 @@ output_type = ENV.fetch("PSIQUE_FORMAT", "pdb").downcase.tap do |format|
 end
 beta = ""
 OptionParser.parse do |parser|
-  parser.banner = "Usage: psique [-o|--output PDB] PDB"
+  parser.banner = "Usage: psique [--format FORMAT] [-b|--beta PARAM] [-f|-o|--output FILE] PDB"
   parser.on(
     "--format FORMAT",
     "Set the output format. Must be one of (case-insensitive): pdb, \
@@ -32,7 +32,7 @@ OptionParser.parse do |parser|
   parser.on("-o OUTPUT", "--output OUTPUT", "Output file") do |str|
     output_file = str
   end
-  parser.on("-f OUTPUT", "Alias for -o/--output") do |str|
+  parser.on("-f OUTPUT", "Alias for -o/--output. Compatible with STRIDE") do |str|
     output_file = str
   end
   parser.on(
@@ -76,10 +76,10 @@ OptionParser.parse do |parser|
   end
   parser.on("--cite", "Show citation for article") do
     puts <<-CITE
-      Adasme-Carreño, F., Caballero, J., & Ireta, J. (2021). PSIQUE:
-      Protein Secondary Structure Identification on the Basis of
-      Quaternions and Electronic Structure Calculations. Journal of
-      Chemical Information and Modeling, 61(4), 1789-1800.
+      Adasme-Carreño, F., Caballero, J., & Ireta, J. (2021). PSIQUE: \
+      Protein Secondary Structure Identification on the Basis of \
+      Quaternions and Electronic Structure Calculations. Journal of \
+      Chemical Information and Modeling, 61(4), 1789-1800. \
       https://doi.org/10.1021/acs.jcim.0c01343
       CITE
     exit
