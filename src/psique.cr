@@ -100,6 +100,8 @@ abort "missing input file" unless input_file = ARGV[0]?
 
 begin
   structure = Chem::Structure.from_pdb input_file
+  Chem::Protein::PSIQUE.assign structure
+
   structure.each_residue do |residue|
     case beta
     when "curvature"
@@ -120,15 +122,8 @@ begin
       residue.each_atom &.temperature_factor=(twist)
     end
   end
-  Chem::Protein::PSIQUE.assign structure
 
-  case output_type
-  when "pymol"  then structure.to_pymol output_file
-  when "vmd"    then structure.to_vmd output_file
-  when "stride" then structure.to_stride output_file
-  when "pdb"    then structure.to_pdb output_file
-  else               raise "BUG: unreachable"
-  end
+  structure.write output_file, Chem::Format.parse(output_type)
 rescue ex : Chem::ParseException
   abort ex.inspect_with_location
 end
