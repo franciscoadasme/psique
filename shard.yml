@@ -7,7 +7,7 @@ authors:
 dependencies:
   chem:
     github: franciscoadasme/chem.cr
-    branch: master
+    version: 0.6
 
 targets:
   psique:

@@ -2,7 +2,7 @@ version: 2.0
 shards:
   chem:
     git: https://github.com/franciscoadasme/chem.cr.git
-    version: 0.5.6+git.commit.75281cdcc2bc7a7abc3245445cdda166efd45673
+    version: 0.6.0
 
   views:
     git: https://github.com/franciscoadasme/views.git
