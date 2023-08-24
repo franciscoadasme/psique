@@ -45,6 +45,7 @@ jobs:
           name: psique-linux
           path: ./bin/psique.gz
   release:
+    permissions: write-all
     needs: [build-macos, build-linux]
     runs-on: ubuntu-latest
     steps:
