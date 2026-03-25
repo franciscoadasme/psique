@@ -6,78 +6,92 @@ on:
       - "v*"
 
 jobs:
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Install Crystal
-        uses: crystal-lang/install-crystal@v1
-      - name: Install dependencies
-        run: shards install --production
-      - name: Build the binary
-        run: |
-          shards build --release --stats --progress
-      - name: Compress binary
-        run: zip -rjX ./bin/psique.zip ./bin/psique
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: psique-darwin
-          path: ./bin/psique.zip
-  build-linux:
+  build-linux-x86_64:
     runs-on: ubuntu-latest
     container:
-      image: crystallang/crystal
+      image: crystallang/crystal:latest-alpine
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: shards install --production
+      - name: Build static binary
+        run: shards build --release --static --stats --progress
+      - name: Strip binary
+        run: strip bin/psique
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bin-linux-x86_64
+          path: bin/psique
+
+  build-macos-x86_64:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crystal-lang/install-crystal@v1
       - name: Install dependencies
         run: shards install --production
       - name: Build binary
-        run: |
-          shards build --release --static --stats --progress
-      - name: Compress binary
-        run: gzip ./bin/psique
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v2
+        run: shards build --release --stats --progress
+      - name: Strip binary
+        run: strip bin/psique
+      - uses: actions/upload-artifact@v4
         with:
-          name: psique-linux
-          path: ./bin/psique.gz
-  release:
-    permissions: write-all
-    needs: [build-macos, build-linux]
-    runs-on: ubuntu-latest
+          name: bin-macos-x86_64
+          path: bin/psique
+
+  build-macos-arm64:
+    runs-on: macos-14
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v2
+      - uses: actions/checkout@v4
+      - uses: crystal-lang/install-crystal@v1
+      - name: Install dependencies
+        run: shards install --production
+      - name: Build binary
+        run: shards build --release --stats --progress
+      - name: Strip binary
+        run: strip bin/psique
+      - uses: actions/upload-artifact@v4
         with:
-          path: ./artifacts
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: bin-macos-arm64
+          path: bin/psique
+
+  build-windows-x86_64:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crystal-lang/install-crystal@v1
+      - name: Install dependencies
+        run: shards install --production
+      - name: Build binary
+        run: shards build --release --stats --progress
+      - uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-      - name: Attach linux binary
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: bin-windows-x86_64
+          path: bin/psique.exe
+
+  github-release:
+    needs:
+      [
+        build-linux-x86_64,
+        build-macos-x86_64,
+        build-macos-arm64,
+        build-windows-x86_64,
+      ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/psique-linux/psique.gz
-          asset_name: psique-linux.gz
-          asset_content_type: application/gzip
-      - name: Attach macOS binary
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: artifacts/
+      - name: Prepare release assets
+        run: |
+          mkdir release
+          gzip -c artifacts/bin-linux-x86_64/psique > release/psique-linux-x86_64.gz
+          zip -jX release/psique-macos-x86_64.zip artifacts/bin-macos-x86_64/psique
+          zip -jX release/psique-macos-arm64.zip artifacts/bin-macos-arm64/psique
+          zip -jX release/psique-windows-x86_64.zip artifacts/bin-windows-x86_64/psique.exe
+      - uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/psique-darwin/psique.zip
-          asset_name: psique-darwin.zip
-          asset_content_type: application/zip
+          files: release/*
+          generate_release_notes: true
