@@ -170,6 +170,8 @@ begin
   when "json" then write_json output_file, structure
   else             structure.write output_file, output_type
   end
+rescue ex : File::NotFoundError
+  abort ex.message
 rescue ex : Chem::ParseException
   abort ex.inspect_with_location
 end
