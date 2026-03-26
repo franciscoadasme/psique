@@ -1,5 +1,6 @@
 require "option_parser"
 require "chem"
+require "json"
 
 OUTPUT_FORMATS = %w(pdb stride pymol vmd)
 VERSION        = {{ `shards version "#{__DIR__}"`.chomp.stringify }}
@@ -9,12 +10,58 @@ def abort(message : String)
   exit 1
 end
 
-output_file = STDOUT
-output_type = ENV.fetch("PSIQUE_FORMAT", "pdb").downcase.tap do |format|
-  unless format.in?(OUTPUT_FORMATS)
-    abort "invalid format #{format.inspect} in PSIQUE_FORMAT environment variable"
+def parse_output_format?(format : String) : Chem::Format | String | Nil
+  case format.downcase
+  when "json"   then "json"
+  when "pdb"    then Chem::Format::PDB
+  when "pymol"  then Chem::Format::PyMOL
+  when "stride" then Chem::Format::Stride
+  when "vmd"    then Chem::Format::VMD
+  else               nil
   end
 end
+
+def write_json(io : IO, struc : Chem::Structure) : Nil
+  JSON.build(io) do |json|
+    json.object do
+      json.field "secondary_structures" do
+        json.array do
+          struc.secondary_structures.select(&.[0].sec.regular?).each do |residues|
+            json.object do
+              json.field "sec", residues[0].sec.code.to_s
+              json.field "start" do
+                json.object do
+                  json.field "chain", residues[0].chain.id.to_s
+                  json.field "name", residues[0].name
+                  json.field "insertion", residues[0].insertion_code.try(&.to_s)
+                  json.field "number", residues[0].number
+                end
+              end
+              json.field "end" do
+                json.object do
+                  json.field "chain", residues[-1].chain.id.to_s
+                  json.field "name", residues[-1].name
+                  json.field "insertion", residues[-1].insertion_code.try(&.to_s)
+                  json.field "number", residues[-1].number
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+end
+
+def write_json(path : String, struc : Chem::Structure) : Nil
+  File.open(path, "w") do |file|
+    write_json file, struc
+  end
+end
+
+output_file = STDOUT
+output_type = parse_output_format?(ENV.fetch("PSIQUE_FORMAT", "pdb")) ||
+              abort "invalid format in PSIQUE_FORMAT environment variable"
 beta = ""
 OptionParser.parse do |parser|
   parser.banner = "Usage: psique [--format FORMAT] [-b|--beta PARAM] [-f|-o|--output FILE] PDB"
@@ -23,11 +70,7 @@ OptionParser.parse do |parser|
     "Set the output format. Must be one of (case-insensitive): pdb, \
     stride, pymol, or vmd. Defaults to PDB."
   ) do |str|
-    if (str = str.downcase).in?(OUTPUT_FORMATS)
-      output_type = str
-    else
-      abort "invalid value for --format: #{str.inspect}"
-    end
+    output_type = parse_output_format?(str) || abort "invalid value for --format: #{str.inspect}"
   end
   parser.on("-o OUTPUT", "--output OUTPUT", "Output file") do |str|
     output_file = str
@@ -123,7 +166,10 @@ begin
     end
   end
 
-  structure.write output_file, Chem::Format.parse(output_type)
+  case output_type
+  when "json" then write_json output_file, structure
+  else             structure.write output_file, output_type
+  end
 rescue ex : Chem::ParseException
   abort ex.inspect_with_location
 end
