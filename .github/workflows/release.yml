@@ -48,10 +48,26 @@ jobs:
         run: shards install --production
       - name: Build binary
         run: shards build --release --stats --progress
+      - name: Bundle Crystal runtime DLLs
+        shell: pwsh
+        run: |
+          $crystalDir = Split-Path (Get-Command crystal).Source
+          $dlls = @('gc.dll', 'yaml.dll', 'pcre2-8.dll', 'iconv-2.dll')
+          foreach ($dll in $dlls) {
+            $src = Get-ChildItem -Path $crystalDir -Filter $dll -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($src) {
+              Copy-Item $src.FullName bin\
+              Write-Host "Bundled $dll from $($src.FullName)"
+            } else {
+              Write-Warning "DLL not found: $dll"
+            }
+          }
+          Write-Host "--- bin/ contents ---"
+          Get-ChildItem bin\
       - uses: actions/upload-artifact@v4
         with:
           name: bin-windows-x86_64
-          path: bin/psique.exe
+          path: bin/
 
   github-release:
     needs: [build-linux-x86_64, build-macos-arm64, build-windows-x86_64]
@@ -67,7 +83,7 @@ jobs:
           mkdir release
           gzip -c artifacts/bin-linux-x86_64/psique > release/psique-linux-x86_64.gz
           zip -jX release/psique-macos-arm64.zip artifacts/bin-macos-arm64/psique
-          zip -jX release/psique-windows-x86_64.zip artifacts/bin-windows-x86_64/psique.exe
+          zip -jX release/psique-windows-x86_64.zip artifacts/bin-windows-x86_64/*
       - uses: softprops/action-gh-release@v2
         with:
           files: release/*
