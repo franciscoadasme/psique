@@ -1,12 +1,13 @@
-require "option_parser"
 require "chem"
+require "colorize"
 require "json"
+require "option_parser"
 
 OUTPUT_FORMATS = %w(pdb stride pymol vmd)
 VERSION        = {{ `shards version "#{__DIR__}"`.chomp.stringify }}
 
 def abort(message : String)
-  STDERR.puts "psique: #{message}"
+  STDERR.puts "psique: #{message}".colorize.red
   exit 1
 end
 
