@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "psique"
+dynamic = ["version"]
+description = "PSIQUE: Protein Secondary Structure Identification on the basis of Quaternions and Electronic structure calculations"
+license = "MIT"
+requires-python = ">=3.8"
+authors = [
+    {name = "Francisco Adasme", email = "fadasme@ucm.cl"},
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+
+[project.urls]
+Homepage = "https://github.com/franciscoadasme/psique"
+Repository = "https://github.com/franciscoadasme/psique"
+
+[project.scripts]
+psique = "psique:_cli_entry"
+
+[tool.setuptools.dynamic]
+version = {attr = "psique.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+psique = ["bin/*"]

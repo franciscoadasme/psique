@@ -3,3 +3,8 @@
 /bin/
 /.shards/
 *.dwarf
+
+# Python packaging
+python/dist/
+python/build/
+python/src/*.egg-info/

@@ -88,3 +88,65 @@ jobs:
         with:
           files: release/*
           generate_release_notes: true
+
+  build-wheels:
+    needs: [build-linux-x86_64, build-macos-arm64, build-windows-x86_64]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - artifact: bin-linux-x86_64
+            binary: psique
+            platform_tag: manylinux_2_17_x86_64
+          - artifact: bin-macos-arm64
+            binary: psique
+            platform_tag: macosx_14_0_arm64
+          - artifact: bin-windows-x86_64
+            binary: psique.exe
+            platform_tag: win_amd64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: python/src/psique/bin/
+      - name: Set executable permission
+        if: matrix.binary != 'psique.exe'
+        run: chmod +x python/src/psique/bin/${{ matrix.binary }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install Python build tools
+        run: pip install 'build>=1.0' 'wheel>=0.40'
+      - name: Set version from tag
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          sed -i "s/__version__ = \".*\"/__version__ = \"$VERSION\"/" python/src/psique/__init__.py
+      - name: Build wheel
+        working-directory: python
+        run: python -m build --wheel
+      - name: Tag wheel for platform
+        run: python -m wheel tags --remove --platform-tag=${{ matrix.platform_tag }} python/dist/*.whl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.platform_tag }}
+          path: python/dist/*.whl
+
+  publish-pypi:
+    needs: [build-wheels]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    environment:
+      name: pypi
+      url: https://pypi.org/p/psique
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheel-*
+          path: dist/
+          merge-multiple: true
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
