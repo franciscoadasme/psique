@@ -23,24 +23,8 @@ jobs:
           name: bin-linux-x86_64
           path: bin/psique
 
-  build-macos-x86_64:
-    runs-on: macos-13
-    steps:
-      - uses: actions/checkout@v4
-      - uses: crystal-lang/install-crystal@v1
-      - name: Install dependencies
-        run: shards install --production
-      - name: Build binary
-        run: shards build --release --stats --progress
-      - name: Strip binary
-        run: strip bin/psique
-      - uses: actions/upload-artifact@v4
-        with:
-          name: bin-macos-x86_64
-          path: bin/psique
-
   build-macos-arm64:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - uses: crystal-lang/install-crystal@v1
@@ -70,13 +54,7 @@ jobs:
           path: bin/psique.exe
 
   github-release:
-    needs:
-      [
-        build-linux-x86_64,
-        build-macos-x86_64,
-        build-macos-arm64,
-        build-windows-x86_64,
-      ]
+    needs: [build-linux-x86_64, build-macos-arm64, build-windows-x86_64]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -88,7 +66,6 @@ jobs:
         run: |
           mkdir release
           gzip -c artifacts/bin-linux-x86_64/psique > release/psique-linux-x86_64.gz
-          zip -jX release/psique-macos-x86_64.zip artifacts/bin-macos-x86_64/psique
           zip -jX release/psique-macos-arm64.zip artifacts/bin-macos-arm64/psique
           zip -jX release/psique-windows-x86_64.zip artifacts/bin-windows-x86_64/psique.exe
       - uses: softprops/action-gh-release@v2
