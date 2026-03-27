@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "psique"
 dynamic = ["version"]
 description = "PSIQUE: Protein Secondary Structure Identification on the basis of Quaternions and Electronic structure calculations"
+readme = "README.md"
 license = "MIT"
 requires-python = ">=3.8"
 authors = [

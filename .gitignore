@@ -8,3 +8,4 @@
 python/dist/
 python/build/
 python/src/*.egg-info/
+python/README.md
