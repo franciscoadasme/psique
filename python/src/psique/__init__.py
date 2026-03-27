@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from enum import Enum, unique
 from pathlib import Path
 
-__version__ = "1.1.2"
+__version__ = "1.2.1"
 
 __all__ = ["binary_path", "run"]
 
