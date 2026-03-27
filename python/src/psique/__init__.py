@@ -91,7 +91,8 @@ def binary_path() -> str:
 def assign(path: str | Path) -> list[SecondaryStructure]:
     """Assign the secondary structure of a protein structure using PSIQUE."""
     output = subprocess.check_output(
-        [binary_path(), "--format", "json", "--", str(path)]
+        [binary_path(), "--format", "json", "--", str(path)],
+        stderr=subprocess.STDOUT,
     )
     return [
         SecondaryStructure.from_json(ss)
