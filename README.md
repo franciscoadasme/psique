@@ -60,7 +60,7 @@ Binaries for either MacOS or Linux are available. Go to the webpage of the [late
 #### Linux
 
 ```sh
-wget https://github.com/franciscoadasme/psique/releases/latest/download/psique-linux.gz -O psique.gz && \
+wget https://github.com/franciscoadasme/psique/releases/latest/download/psique-linux-x86_64.gz -O psique.gz && \
 gzip -d psique.gz && \
 chmod u+x psique
 ```
@@ -68,16 +68,32 @@ chmod u+x psique
 #### MacOS
 
 ```sh
-curl -L https://github.com/franciscoadasme/psique/releases/latest/download/psique-darwin.zip -o psique.zip && \
+curl -L https://github.com/franciscoadasme/psique/releases/latest/download/psique-macos-arm64.zip -o psique.zip && \
 unzip psique.zip && \
 chmod u+x psique
 ```
 
 #### Windows
 
-Crystal on Windows is currently in preview, so PSIQUE is not compiled automatically for Windows just yet. However, it can be built from source ([see below](#from-source)).
+To download and unzip the Windows executable using PowerShell, run:
 
-An alternative is to use the Windows Subsystem for Linux (WSL) to run a local Linux distro within Windows and compile/run PSIQUE from there. For more information about WSL, refer to [WSL documentation](https://docs.microsoft.com/en-us/windows/wsl/about).
+```powershell
+Invoke-WebRequest -Uri "https://github.com/franciscoadasme/psique/releases/latest/download/psique-windows-x86_64.zip" -OutFile "psique.zip"
+Expand-Archive -Path "psique.zip" -DestinationPath "."
+```
+
+This should place the `psique.exe` executable along with the required DLLs in the current directory.
+
+### Python package
+
+You can install the Python wrapper package of PSIQUE via [PyPI](https://pypi.org/project/psique) using `pip`:
+
+```sh
+pip install psique
+```
+
+After installing, you will have both the Python package and a CLI script named `psique` available in your environment.
+The package will automatically manage the download of the correct PSIQUE binary for your platform.
 
 ### From source
 
@@ -153,7 +169,24 @@ Alternatively, the output format can be set via the `PSIQUE_FORMAT` environment 
 PSIQUE_FORMAT=pymol psique 1crn.pdb -o 1crn.pml
 ```
 
-**IMPORTANT:** In both PyMOL and VMD Command Script files, the PDB file path is written as specified in the command line to the script file, so moving it into a different folder may break it.
+> [!IMPORTANT]
+> In both PyMOL and VMD Command Script files, the PDB file path is written as specified in the command line to the script file, so moving it into a different folder may break it.
+
+### Python API
+
+PSIQUE also provides a convenient Python API to run the analysis:
+
+```python
+import psique
+
+ss = psique.assign("1crn.pdb")
+for sec in ss:
+    print(sec.kind, sec.start, sec.end)
+```
+
+This will run the PSIQUE executable and parse the output into a data structure for easy manipulation.
+It returns a list of `SecondaryStructure` instances that provide access to the secondary structure kind and start and end locations within the protein.
+The latter two are instances of `ResidueId`, which contains the chain id, residue name, residue number and insertion code.
 
 ### Hooking PSIQUE to other software
 
@@ -163,7 +196,7 @@ Such software can be tricked into using PSIQUE when calling STRIDE.
 #### Using environment variables
 
 [VMD](https://www.ks.uiuc.edu/Research/vmd), [PyMOL](https://pymol.org) (via the [DSSP Stride](https://pymolwiki.org/index.php/DSSP_Stride) plugin), and other software allow setting a custom executable for STRIDE manually via an environment variable (usually `STRIDE_BIN`).
-In such cases, set it to the location of the `psique` binary, and the `PSIQUE_FORMAT` environment variable to `stride`.
+In such cases, set it to the location of the `psique` binary and the `PSIQUE_FORMAT` environment variable to `stride`.
 
 For Unix-like OSs, simply do:
 
@@ -208,7 +241,8 @@ export PATH="$HOME/bin:$PATH" # ensures the executable is discoverable
 export PSIQUE_FORMAT=stride # forces STRIDE format
 ```
 
-**NOTE:** Ensure the directory containing the `psique` binary or symbolic link has priority in the `PATH` environment variable, which lists all the directories that are searched for executables in order.
+> [!IMPORTANT]
+> Ensure the directory containing the `psique` binary or symbolic link has priority in the `PATH` environment variable, which lists all the directories that are searched for executables in order.
 
 #### VMD on Windows
 
@@ -222,7 +256,8 @@ set ::env(STRIDE_BIN) /path/to/psique
 set ::env(PSIQUE_FORMAT) stride
 ```
 
-**NOTE:** VMD prints out a notice about the STRIDE citation each time it calls the STRIDE binary regardless of the program executed.
+> [!NOTE]
+> VMD prints out a notice about the STRIDE citation each time it calls the STRIDE binary regardless of the program executed.
 
 ## Citation
 
